@@ -217,7 +217,7 @@ impl<T: MyField> Prover<T> {
 //     pub fn new(
 //         // total_round: usize,
 //         interpolate_cosets: &Vec<Coset<T>>,
-//         polynomials: Vec<MultilinearPolynomial<T>>, 
+//         polynomials: Vec<MultilinearPolynomial<T>>,
 //         oracle: &RandomOracle<T>,
 //         step: usize,
 //     ) -> Self {
@@ -230,7 +230,7 @@ impl<T: MyField> Prover<T> {
 //         .take(total_round)
 //         .collect::<Vec<_>>();
 
-//         let hypercube_interpolations = 
+//         let hypercube_interpolations =
 //             sorted_polys.clone().into_iter().map(|p| p.evaluate_hypercube()).collect::<Vec<Vec<T>>>();
 
 //         BatchProver {

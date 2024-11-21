@@ -1,4 +1,7 @@
-use crate::{algebra::{field::MyField, polynomial::MultilinearPolynomial}, random_oracle::RandomOracle};
+use crate::{
+    algebra::{field::MyField, polynomial::MultilinearPolynomial},
+    random_oracle::RandomOracle,
+};
 
 use super::verifier::SumcheckVerifier;
 
@@ -7,7 +10,7 @@ pub struct SumcheckProver<T: MyField> {
     polynomial: MultilinearPolynomial<T>,
     oracle: RandomOracle<T>,
     hypercube_interpolation: Vec<T>,
-    sumcheck_values: Vec<(T, T, T)>
+    sumcheck_values: Vec<(T, T, T)>,
 }
 
 impl<T: MyField> SumcheckProver<T> {

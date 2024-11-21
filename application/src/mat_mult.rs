@@ -1,9 +1,13 @@
-use std::ops::Add;
+use std::ops::{Add, Mul};
 
-use batch::{ prover::Prover as BatchProver, verifier::Verifier as BatchVerifier };
-use deepfold::{ prover::Prover as DeepfoldProver, verifier::Verifier as DeepfoldVerifier };
-use util::{algebra::{coset::Coset, field::MyField, polynomial::MultilinearPolynomial}, random_oracle::RandomOracle, sumcheck::{ prover::SumcheckProver, verifier::SumcheckVerifier }};
-use rand::{Rng, thread_rng};
+use batch::{prover::Prover as BatchProver, verifier::Verifier as BatchVerifier};
+use deepfold::{prover::Prover as DeepfoldProver, verifier::Verifier as DeepfoldVerifier};
+use rand::{thread_rng, Rng};
+use util::{
+    algebra::{coset::Coset, field::MyField, polynomial::MultilinearPolynomial},
+    random_oracle::RandomOracle,
+    sumcheck::{prover::SumcheckProver, verifier::SumcheckVerifier},
+};
 
 use util::{CODE_RATE, SECURITY_BITS};
 
@@ -11,7 +15,7 @@ use util::{CODE_RATE, SECURITY_BITS};
 pub struct Matrix<T: MyField> {
     rows: Vec<Vec<T>>,
     padded_rows: Vec<Vec<T>>,
-    splitted_matrices: Vec<Vec<Vec<T>>>, 
+    splitted_matrices: Vec<Vec<Vec<T>>>,
     dom_row_size: usize,
     dom_col_size: usize,
     polys: Vec<Vec<MultilinearPolynomial<T>>>,
@@ -98,22 +102,58 @@ impl<T: MyField> Matrix<T> {
 
         self.splitted_matrices = vec![
             extract_submatrix(&padded_mat, 0..dom_row_size, 0..dom_col_size),
-            extract_submatrix(&padded_mat, 0..dom_row_size, dom_col_size..dom_col_size+sub_col_size),
-            extract_submatrix(&padded_mat, dom_row_size..dom_row_size+sub_row_size, 0..dom_col_size),
-            extract_submatrix(&padded_mat, dom_row_size..dom_row_size+sub_row_size, dom_col_size..dom_col_size+sub_col_size),
+            extract_submatrix(
+                &padded_mat,
+                0..dom_row_size,
+                dom_col_size..dom_col_size + sub_col_size,
+            ),
+            extract_submatrix(
+                &padded_mat,
+                dom_row_size..dom_row_size + sub_row_size,
+                0..dom_col_size,
+            ),
+            extract_submatrix(
+                &padded_mat,
+                dom_row_size..dom_row_size + sub_row_size,
+                dom_col_size..dom_col_size + sub_col_size,
+            ),
         ];
     }
 
     pub fn to_poly(&mut self) {
         self.polys = vec![
             vec![
-                MultilinearPolynomial::new(self.splitted_matrices[0].clone().into_iter().flatten().collect()),
-                MultilinearPolynomial::new(self.splitted_matrices[1].clone().into_iter().flatten().collect()),
+                MultilinearPolynomial::new(
+                    self.splitted_matrices[0]
+                        .clone()
+                        .into_iter()
+                        .flatten()
+                        .collect(),
+                ),
+                MultilinearPolynomial::new(
+                    self.splitted_matrices[1]
+                        .clone()
+                        .into_iter()
+                        .flatten()
+                        .collect(),
+                ),
             ],
             vec![
-                MultilinearPolynomial::new(self.splitted_matrices[2].clone().into_iter().flatten().collect()),
-                MultilinearPolynomial::new(self.splitted_matrices[3].clone().into_iter().flatten().collect()),
-            ]
+                MultilinearPolynomial::new(
+                    self.splitted_matrices[2]
+                        .clone()
+                        .into_iter()
+                        .flatten()
+                        .collect(),
+                ),
+                MultilinearPolynomial::new(
+                    self.splitted_matrices[3]
+                        .clone()
+                        .into_iter()
+                        .flatten()
+                        .collect(),
+                ),
+            ],
         ];
     }
 
@@ -126,7 +166,14 @@ impl<T: MyField> Matrix<T> {
     }
 }
 
-pub fn mat_mult<T: MyField>(a: &Matrix<T>, b: &Matrix<T>, c: &Matrix<T>) {
+impl<T: MyField> Mul for Matrix<T> {
+    type Output = Self;
+    fn mul(self, rhs: Self) -> Self::Output {
+        Self::new(matrix_multiply(&self.rows, &rhs.rows))
+    }
+}
+
+pub fn mat_mult<T: MyField>(a: &Matrix<T>, b: &Matrix<T>, c: &Matrix<T>) -> usize {
     // 1. Check random element of C: sample r1, r2 and get the value of C(r1, r2)
     let mut rng = thread_rng();
     let r_1 = rng.gen_range(0..c.get_row_size());
@@ -145,37 +192,57 @@ pub fn mat_mult<T: MyField>(a: &Matrix<T>, b: &Matrix<T>, c: &Matrix<T>) {
     let mut sc_prover = SumcheckProver::new(variable_number, f, &oracle);
     let mut sc_verifier = SumcheckVerifier::new(variable_number, &oracle);
     sc_prover.prove();
-    sc_prover.send_sumcheck_values(&mut sc_verifier); 
+    sc_prover.send_sumcheck_values(&mut sc_verifier);
     let (challenge, _scalar) = sc_verifier.verify();
 
     // 3. the final output of polyA and polyB, C(r1, r2) should be fed into a batch deepfold
     let mut point_a = int_2_field_vec(r_1 as u64, a.get_padded_row_size().ilog2() as usize).clone();
     point_a.extend(&challenge);
     let mut point_b = challenge.clone();
-    point_b.extend(int_2_field_vec::<T>(r_2 as u64, b.get_padded_col_size().ilog2() as usize));
+    point_b.extend(int_2_field_vec::<T>(
+        r_2 as u64,
+        b.get_padded_col_size().ilog2() as usize,
+    ));
 
     let _claimed_value_a = poly_a.evaluate(&point_a);
     let _claimed_value_b = poly_b.evaluate(&point_b);
 
     let mut polys = vec![];
-    polys.extend(a.polys.clone().into_iter().flatten().collect::<Vec<MultilinearPolynomial<T>>>());
-    polys.extend(b.polys.clone().into_iter().flatten().collect::<Vec<MultilinearPolynomial<T>>>());
-    polys.extend(c.polys.clone().into_iter().flatten().collect::<Vec<MultilinearPolynomial<T>>>());
+    polys.extend(
+        a.polys
+            .clone()
+            .into_iter()
+            .flatten()
+            .collect::<Vec<MultilinearPolynomial<T>>>(),
+    );
+    polys.extend(
+        b.polys
+            .clone()
+            .into_iter()
+            .flatten()
+            .collect::<Vec<MultilinearPolynomial<T>>>(),
+    );
+    polys.extend(
+        c.polys
+            .clone()
+            .into_iter()
+            .flatten()
+            .collect::<Vec<MultilinearPolynomial<T>>>(),
+    );
     // random shuffle for polys to assign a shared evaluate point
-    let random_shuffle_poly = polys.clone().into_iter().reduce(|f, g| f+g).unwrap();
+    let random_shuffle_poly = polys.clone().into_iter().reduce(|f, g| f + g).unwrap();
     let sc_vn = random_shuffle_poly.variable_num();
     let oracle = RandomOracle::new(sc_vn, 1);
     let mut sc_prover = SumcheckProver::new(sc_vn, random_shuffle_poly, &oracle);
     let mut sc_verifier = SumcheckVerifier::new(sc_vn, &oracle);
     sc_prover.prove();
-    sc_prover.send_sumcheck_values(&mut sc_verifier); 
+    sc_prover.send_sumcheck_values(&mut sc_verifier);
     let (df_point, _scalar) = sc_verifier.verify();
 
     let full_polys = sort_and_fill_polys(&mut polys, T::random_element());
 
     let df_vn = full_polys.first().map_or(0, |p| p.variable_num());
-    let mut interpolate_cosets =
-        vec![Coset::new(1 << (df_vn + CODE_RATE), T::from_int(1))];
+    let mut interpolate_cosets = vec![Coset::new(1 << (df_vn + CODE_RATE), T::from_int(1))];
     for i in 1..df_vn {
         interpolate_cosets.push(interpolate_cosets[i - 1].pow(2));
     }
@@ -188,10 +255,12 @@ pub fn mat_mult<T: MyField>(a: &Matrix<T>, b: &Matrix<T>, c: &Matrix<T>) {
     // let point = df_verifier.get_open_point();
     df_verifier.set_open_point(&df_point);
     let proof = df_prover.generate_proof(df_point);
+    let size = proof.size();
     assert!(df_verifier.verify(proof));
+    size
 }
 
-pub fn naive_mat_mult<T: MyField> (a: &Matrix<T>, b: &Matrix<T>, c: &Matrix<T>) {
+pub fn naive_mat_mult<T: MyField>(a: &Matrix<T>, b: &Matrix<T>, c: &Matrix<T>) -> usize {
     let mut rng = thread_rng();
     let r_1 = rng.gen_range(0..c.get_row_size());
     let r_2 = rng.gen_range(0..c.get_col_size());
@@ -207,48 +276,63 @@ pub fn naive_mat_mult<T: MyField> (a: &Matrix<T>, b: &Matrix<T>, c: &Matrix<T>) 
     let mut sc_prover = SumcheckProver::new(variable_number, f, &oracle);
     let mut sc_verifier = SumcheckVerifier::new(variable_number, &oracle);
     sc_prover.prove();
-    sc_prover.send_sumcheck_values(&mut sc_verifier); 
+    sc_prover.send_sumcheck_values(&mut sc_verifier);
     let (challenge, _scalar) = sc_verifier.verify();
 
-    let mut point_a = int_2_field_vec::<T>(r_1 as u64, a.get_padded_row_size().ilog2() as usize).clone();
+    let mut point_a =
+        int_2_field_vec::<T>(r_1 as u64, a.get_padded_row_size().ilog2() as usize).clone();
     point_a.extend(&challenge);
     let mut point_b = challenge.clone();
-    point_b.extend(int_2_field_vec::<T>(r_2 as u64, b.get_padded_col_size().ilog2() as usize));
-    let mut point_c = int_2_field_vec::<T>(r_1 as u64, a.get_padded_row_size().ilog2() as usize).clone();
-    point_c.extend(int_2_field_vec::<T>(r_2 as u64, b.get_padded_col_size().ilog2() as usize));
+    point_b.extend(int_2_field_vec::<T>(
+        r_2 as u64,
+        b.get_padded_col_size().ilog2() as usize,
+    ));
+    let mut point_c =
+        int_2_field_vec::<T>(r_1 as u64, a.get_padded_row_size().ilog2() as usize).clone();
+    point_c.extend(int_2_field_vec::<T>(
+        r_2 as u64,
+        b.get_padded_col_size().ilog2() as usize,
+    ));
 
-    let random_shuffle_poly = vec![poly_a.clone(), poly_b.clone(), poly_c.clone()].into_iter().reduce(|f, g| f+g).unwrap();
+    let random_shuffle_poly = vec![poly_a.clone(), poly_b.clone(), poly_c.clone()]
+        .into_iter()
+        .reduce(|f, g| f + g)
+        .unwrap();
     let sc_vn = random_shuffle_poly.variable_num();
     let oracle = RandomOracle::new(sc_vn, 1);
     let mut sc_prover = SumcheckProver::new(sc_vn, random_shuffle_poly, &oracle);
     let mut sc_verifier = SumcheckVerifier::new(sc_vn, &oracle);
     sc_prover.prove();
-    sc_prover.send_sumcheck_values(&mut sc_verifier); 
+    sc_prover.send_sumcheck_values(&mut sc_verifier);
     let (df_point, _scalar) = sc_verifier.verify();
-    
+
     let random_comb = T::random_element();
-    let df_poly = vec![poly_a, poly_b, poly_c].into_iter().reduce(|f, g| f*random_comb+g).unwrap();
+    let df_poly = vec![poly_a, poly_b, poly_c]
+        .into_iter()
+        .reduce(|f, g| f * random_comb + g)
+        .unwrap();
     let df_vn = df_poly.variable_num();
-    let mut interpolate_cosets =
-        vec![Coset::new(1 << (df_vn + CODE_RATE), T::from_int(1))];
-    for i in 1..df_vn+1 {
+    let mut interpolate_cosets = vec![Coset::new(1 << (df_vn + CODE_RATE), T::from_int(1))];
+    for i in 1..df_vn + 1 {
         interpolate_cosets.push(interpolate_cosets[i - 1].pow(2));
     }
 
     let oracle = RandomOracle::new(df_vn, SECURITY_BITS / CODE_RATE);
-    let df_prover = DeepfoldProver::new(df_vn, &interpolate_cosets, df_poly, &oracle, 4);
+    let df_prover = DeepfoldProver::new(df_vn, &interpolate_cosets, df_poly, &oracle, 1);
     let commit = df_prover.commit_polynomial();
-    let mut df_verifier = DeepfoldVerifier::new(df_vn, &interpolate_cosets, commit, &oracle, 4);
+    let mut df_verifier = DeepfoldVerifier::new(df_vn, &interpolate_cosets, commit, &oracle, 1);
     // let point = get_random_shuffle_point::<T>(df_vn);
     // let point = df_verifier.get_open_point();
     df_verifier.set_open_point(&df_point);
     let proof = df_prover.generate_proof(df_point);
+    let size = proof.size();
     assert!(df_verifier.verify(proof));
+    size
 }
 
 fn pad<T: MyField>(rows: &Vec<Vec<T>>, to_row_size: usize, to_col_size: usize) -> Vec<Vec<T>> {
     let mut mat = rows.clone();
-    
+
     for i in 0..rows.len() {
         while mat[i].len() < to_col_size {
             mat[i].push(T::from_int(0));
@@ -296,7 +380,9 @@ fn find_dom_power_of_2(n: usize) -> (usize, usize) {
 fn int_2_field_vec<T: MyField>(n: u64, size: usize) -> Vec<T> {
     let mut res = Vec::new();
 
-    let mut bits = if n == 0 { 1 } else {
+    let mut bits = if n == 0 {
+        1
+    } else {
         n.trailing_zeros() as usize + 1
     };
 
@@ -312,7 +398,11 @@ fn int_2_field_vec<T: MyField>(n: u64, size: usize) -> Vec<T> {
     res
 }
 
-fn extract_submatrix<T: MyField>(mat: &Vec<Vec<T>>, rows: std::ops::Range<usize>, cols: std::ops::Range<usize>) -> Vec<Vec<T>> {
+fn extract_submatrix<T: MyField>(
+    mat: &Vec<Vec<T>>,
+    rows: std::ops::Range<usize>,
+    cols: std::ops::Range<usize>,
+) -> Vec<Vec<T>> {
     let mut submatrix = Vec::new();
 
     for row_index in rows {
@@ -330,7 +420,10 @@ fn extract_submatrix<T: MyField>(mat: &Vec<Vec<T>>, rows: std::ops::Range<usize>
     submatrix
 }
 
-fn sort_and_fill_polys<T: MyField> (polys: &mut Vec<MultilinearPolynomial<T>>, r: T) -> Vec<MultilinearPolynomial<T>> {
+fn sort_and_fill_polys<T: MyField>(
+    polys: &mut Vec<MultilinearPolynomial<T>>,
+    r: T,
+) -> Vec<MultilinearPolynomial<T>> {
     polys.sort_by_key(|p| p.variable_num());
 
     let mut combined_polys = vec![];
@@ -340,9 +433,13 @@ fn sort_and_fill_polys<T: MyField> (polys: &mut Vec<MultilinearPolynomial<T>>, r
         let mut tmp_poly_coeffs = polys[current_ind].coefficients().clone();
         let degree = polys[current_ind].variable_num();
         let mut w = r;
-        for j in current_ind+1..polys.len()+1 {
+        for j in current_ind + 1..polys.len() + 1 {
             if j < polys.len() && polys[j].variable_num() == degree {
-                tmp_poly_coeffs = tmp_poly_coeffs.iter().zip(polys[j].coefficients().iter()).map(|(&f, &g)| f+w*g).collect();
+                tmp_poly_coeffs = tmp_poly_coeffs
+                    .iter()
+                    .zip(polys[j].coefficients().iter())
+                    .map(|(&f, &g)| f + w * g)
+                    .collect();
                 w *= r;
             } else {
                 current_ind = j;
@@ -357,11 +454,16 @@ fn sort_and_fill_polys<T: MyField> (polys: &mut Vec<MultilinearPolynomial<T>>, r
     let mut current_deg = combined_polys.first().map_or(0, |p| p.variable_num());
     let mut current_ind = 0;
     while current_deg > 0 {
-        if current_ind < combined_polys.len() && combined_polys[current_ind].variable_num() == current_deg {
+        if current_ind < combined_polys.len()
+            && combined_polys[current_ind].variable_num() == current_deg
+        {
             full_polys.push(combined_polys[current_ind].clone());
             current_ind += 1;
         } else {
-            full_polys.push(MultilinearPolynomial::new(vec![T::from_int(0); 1 << current_deg]));
+            full_polys.push(MultilinearPolynomial::new(vec![
+                T::from_int(0);
+                1 << current_deg
+            ]));
         }
         current_deg -= 1;
     }
@@ -369,6 +471,27 @@ fn sort_and_fill_polys<T: MyField> (polys: &mut Vec<MultilinearPolynomial<T>>, r
     full_polys
 }
 
-fn get_random_shuffle_point<T: MyField> (size: usize) -> Vec<T> {
-    (0..size).into_iter().map(|_| T::random_element()).collect()
+fn matrix_multiply<T: MyField>(a: &Vec<Vec<T>>, b: &Vec<Vec<T>>) -> Vec<Vec<T>> {
+    let rows_a = a.len();
+    let cols_a = a[0].len();
+    let rows_b = b.len();
+    let cols_b = b[0].len();
+
+    if cols_a != rows_b {
+        panic!(
+            "Matrix multiplication failed: number of columns in A must equal number of rows in B."
+        );
+    }
+
+    let mut result = vec![vec![T::from_int(0); cols_b]; rows_a];
+
+    for i in 0..rows_a {
+        for j in 0..cols_b {
+            for k in 0..cols_a {
+                result[i][j] = result[i][j] + a[i][k] * b[k][j];
+            }
+        }
+    }
+
+    result
 }

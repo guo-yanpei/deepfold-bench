@@ -97,14 +97,25 @@ pub struct MultilinearPolynomial<T: MyField> {
 impl<T: MyField> Add for MultilinearPolynomial<T> {
     type Output = Self;
     fn add(self, rhs: Self) -> Self::Output {
-        Self::new(self.coefficients().iter().zip(rhs.coefficients().iter()).map(|(&f, &g)| f+g).collect::<Vec<T>>())
+        Self::new(
+            self.coefficients()
+                .iter()
+                .zip(rhs.coefficients().iter())
+                .map(|(&f, &g)| f + g)
+                .collect::<Vec<T>>(),
+        )
     }
 }
 
 impl<T: MyField> Mul<T> for MultilinearPolynomial<T> {
     type Output = Self;
     fn mul(self, rhs: T) -> Self::Output {
-        Self::new(self.coefficients().iter().map(|&f| f*rhs).collect::<Vec<T>>())
+        Self::new(
+            self.coefficients()
+                .iter()
+                .map(|&f| f * rhs)
+                .collect::<Vec<T>>(),
+        )
     }
 }
 

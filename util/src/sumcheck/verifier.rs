@@ -7,10 +7,7 @@ pub struct SumcheckVerifier<T: MyField> {
 }
 
 impl<T: MyField> SumcheckVerifier<T> {
-    pub fn new(
-        total_round: usize,
-        oracle: &RandomOracle<T>,
-    ) -> Self {
+    pub fn new(total_round: usize, oracle: &RandomOracle<T>) -> Self {
         SumcheckVerifier {
             total_round,
             oracle: oracle.clone(),
@@ -28,10 +25,12 @@ impl<T: MyField> SumcheckVerifier<T> {
         let mut sum = self.sumcheck_values[0].0 + self.sumcheck_values[0].1;
         for k in 0..self.total_round {
             let challenge = self.oracle.folding_challenges[k];
-            sum =
-                self.process_sumcheck(challenge, sum, self.sumcheck_values[k]);
+            sum = self.process_sumcheck(challenge, sum, self.sumcheck_values[k]);
         }
-        (self.oracle.folding_challenges[0..self.total_round].to_vec(), sum)
+        (
+            self.oracle.folding_challenges[0..self.total_round].to_vec(),
+            sum,
+        )
     }
 
     fn process_sumcheck(&self, challenge: T, last_sum: T, sumcheck_values: (T, T, T)) -> T {

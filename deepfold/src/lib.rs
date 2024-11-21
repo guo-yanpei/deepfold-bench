@@ -80,7 +80,7 @@ pub struct Proof<T: MyField> {
 }
 
 impl<T: MyField> Proof<T> {
-    fn size(&self) -> usize {
+    pub fn size(&self) -> usize {
         self.merkle_root.len() * MERKLE_ROOT_SIZE
             + self
                 .query_result
