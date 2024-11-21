@@ -3,6 +3,11 @@ pub mod algebra {
     pub mod field;
     pub mod polynomial;
 }
+pub mod sumcheck {
+    pub mod prover;
+    pub mod verifier;
+}
+
 pub mod interpolation;
 pub mod merkle_tree;
 pub mod query_result;

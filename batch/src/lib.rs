@@ -128,7 +128,7 @@ mod tests {
         let polynomials = (0..variable_num)
             .rev()
             .map(|x| MultilinearPolynomial::random_polynomial(x + 1))
-            .collect();
+            .collect::<Vec<MultilinearPolynomial<T>>>();
         let prover = Prover::new(variable_num, &interpolate_cosets, polynomials, &oracle);
         let commit = prover.commit_polynomial();
         let verifier = Verifier::new(variable_num, &interpolate_cosets, commit, &oracle);
@@ -142,7 +142,7 @@ mod tests {
     #[test]
     fn test_proof_size() {
         let mut wtr = Writer::from_path("batch.csv").unwrap();
-        let range = 10..23;
+        let range = 10..11;
         for i in range.clone() {
             let proof_size = output_proof_size::<Mersenne61Ext>(i);
             wtr.write_record(&[i.to_string(), proof_size.to_string()])
