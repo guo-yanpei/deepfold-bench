@@ -207,30 +207,23 @@ pub fn mat_mult<T: MyField>(a: &Matrix<T>, b: &Matrix<T>, c: &Matrix<T>) -> usiz
     let _claimed_value_a = poly_a.evaluate(&point_a);
     let _claimed_value_b = poly_b.evaluate(&point_b);
 
-    let mut polys = vec![];
-    polys.extend(
-        a.polys
-            .clone()
-            .into_iter()
-            .flatten()
-            .collect::<Vec<MultilinearPolynomial<T>>>(),
-    );
-    polys.extend(
-        b.polys
-            .clone()
-            .into_iter()
-            .flatten()
-            .collect::<Vec<MultilinearPolynomial<T>>>(),
-    );
-    polys.extend(
-        c.polys
-            .clone()
-            .into_iter()
-            .flatten()
-            .collect::<Vec<MultilinearPolynomial<T>>>(),
-    );
+    // let flatten_polys = vec![
+    //     a.polys
+    //         .clone()
+    //         .into_iter()
+    //         .flatten()
+    //         .collect::<Vec<MultilinearPolynomial<T>>>(),
+    //     b.polys
+    //         .clone()
+    //         .into_iter()
+    //         .flatten()
+    //         .collect::<Vec<MultilinearPolynomial<T>>>(),
+    // ];
+    let mut full_polys = a.polys.clone().into_iter().flatten().collect::<Vec<MultilinearPolynomial<T>>>();
+    full_polys.extend(b.polys.clone().into_iter().flatten());
     // random shuffle for polys to assign a shared evaluate point
-    let random_shuffle_poly = polys.clone().into_iter().reduce(|f, g| f + g).unwrap();
+    
+    let random_shuffle_poly = full_polys.clone().into_iter().reduce(|f, g| f + g).unwrap();
     let sc_vn = random_shuffle_poly.variable_num();
     let oracle = RandomOracle::new(sc_vn, 1);
     let mut sc_prover = SumcheckProver::new(sc_vn, random_shuffle_poly, &oracle);
@@ -239,8 +232,7 @@ pub fn mat_mult<T: MyField>(a: &Matrix<T>, b: &Matrix<T>, c: &Matrix<T>) -> usiz
     sc_prover.send_sumcheck_values(&mut sc_verifier);
     let (df_point, _scalar) = sc_verifier.verify();
 
-    let full_polys = sort_and_fill_polys(&mut polys, T::random_element());
-
+    let full_polys = sort_and_fill_polys(&mut full_polys, T::random_element());
     let df_vn = full_polys.first().map_or(0, |p| p.variable_num());
     let mut interpolate_cosets = vec![Coset::new(1 << (df_vn + CODE_RATE), T::from_int(1))];
     for i in 1..df_vn {
@@ -258,6 +250,7 @@ pub fn mat_mult<T: MyField>(a: &Matrix<T>, b: &Matrix<T>, c: &Matrix<T>) -> usiz
     let size = proof.size();
     assert!(df_verifier.verify(proof));
     size
+
 }
 
 pub fn naive_mat_mult<T: MyField>(a: &Matrix<T>, b: &Matrix<T>, c: &Matrix<T>) -> usize {
@@ -294,40 +287,51 @@ pub fn naive_mat_mult<T: MyField>(a: &Matrix<T>, b: &Matrix<T>, c: &Matrix<T>) -
         b.get_padded_col_size().ilog2() as usize,
     ));
 
-    let random_shuffle_poly = vec![poly_a.clone(), poly_b.clone(), poly_c.clone()]
-        .into_iter()
-        .reduce(|f, g| f + g)
-        .unwrap();
-    let sc_vn = random_shuffle_poly.variable_num();
-    let oracle = RandomOracle::new(sc_vn, 1);
-    let mut sc_prover = SumcheckProver::new(sc_vn, random_shuffle_poly, &oracle);
-    let mut sc_verifier = SumcheckVerifier::new(sc_vn, &oracle);
-    sc_prover.prove();
-    sc_prover.send_sumcheck_values(&mut sc_verifier);
-    let (df_point, _scalar) = sc_verifier.verify();
-
-    let random_comb = T::random_element();
-    let df_poly = vec![poly_a, poly_b, poly_c]
-        .into_iter()
-        .reduce(|f, g| f * random_comb + g)
-        .unwrap();
-    let df_vn = df_poly.variable_num();
-    let mut interpolate_cosets = vec![Coset::new(1 << (df_vn + CODE_RATE), T::from_int(1))];
-    for i in 1..df_vn + 1 {
-        interpolate_cosets.push(interpolate_cosets[i - 1].pow(2));
+    // let polys = vec![poly_a, poly_b, poly_c];
+    let polys = vec![poly_a, poly_b];
+    // let points = vec![point_a, point_b, point_c];
+    let points = vec![point_a, point_b];
+    let mut total_size = 0;
+    for i in 0..polys.len() {
+        let poly = polys[i].clone();
+        let point = points[i].clone();
+        let df_vn = poly.variable_num();
+        let mut interpolate_cosets = vec![Coset::new(1 << (df_vn + CODE_RATE), T::from_int(1))];
+        for i in 1..df_vn + 1 {
+            interpolate_cosets.push(interpolate_cosets[i - 1].pow(2));
+        }
+    
+        let oracle = RandomOracle::new(df_vn, SECURITY_BITS / CODE_RATE);
+        let df_prover = DeepfoldProver::new(df_vn, &interpolate_cosets, poly, &oracle, 1);
+        let commit = df_prover.commit_polynomial();
+        let mut df_verifier = DeepfoldVerifier::new(df_vn, &interpolate_cosets, commit, &oracle, 1);
+        // let point = get_random_shuffle_point::<T>(df_vn);
+        // let point = df_verifier.get_open_point();
+        df_verifier.set_open_point(&point);
+        let proof = df_prover.generate_proof(point);
+        let size = proof.size();
+        total_size += size;
+        assert!(df_verifier.verify(proof));
     }
+    // let random_shuffle_poly = vec![poly_a.clone(), poly_b.clone(), poly_c.clone()]
+    //     .into_iter()
+    //     .reduce(|f, g| f + g)
+    //     .unwrap();
+    // let sc_vn = random_shuffle_poly.variable_num();
+    // let oracle = RandomOracle::new(sc_vn, 1);
+    // let mut sc_prover = SumcheckProver::new(sc_vn, random_shuffle_poly, &oracle);
+    // let mut sc_verifier = SumcheckVerifier::new(sc_vn, &oracle);
+    // sc_prover.prove();
+    // sc_prover.send_sumcheck_values(&mut sc_verifier);
+    // let (df_point, _scalar) = sc_verifier.verify();
 
-    let oracle = RandomOracle::new(df_vn, SECURITY_BITS / CODE_RATE);
-    let df_prover = DeepfoldProver::new(df_vn, &interpolate_cosets, df_poly, &oracle, 1);
-    let commit = df_prover.commit_polynomial();
-    let mut df_verifier = DeepfoldVerifier::new(df_vn, &interpolate_cosets, commit, &oracle, 1);
-    // let point = get_random_shuffle_point::<T>(df_vn);
-    // let point = df_verifier.get_open_point();
-    df_verifier.set_open_point(&df_point);
-    let proof = df_prover.generate_proof(df_point);
-    let size = proof.size();
-    assert!(df_verifier.verify(proof));
-    size
+    // let random_comb = T::random_element();
+    // let df_poly = vec![poly_a, poly_b, poly_c]
+    //     .into_iter()
+    //     .reduce(|f, g| f * random_comb + g)
+    //     .unwrap();
+
+    total_size
 }
 
 fn pad<T: MyField>(rows: &Vec<Vec<T>>, to_row_size: usize, to_col_size: usize) -> Vec<Vec<T>> {
@@ -366,12 +370,11 @@ fn find_dom_power_of_2(n: usize) -> (usize, usize) {
     }
     pow -= 1;
     let dom = 1 << pow;
-    let mut res = n - dom;
+    let res = n - dom;
 
     let mut pow = 0;
-    while res > 0 {
+    while 1 << pow < res {
         pow += 1;
-        res = res >> 1;
     }
     let sub = 1 << pow;
     (dom, sub)
@@ -425,6 +428,7 @@ fn sort_and_fill_polys<T: MyField>(
     r: T,
 ) -> Vec<MultilinearPolynomial<T>> {
     polys.sort_by_key(|p| p.variable_num());
+    polys.reverse();
 
     let mut combined_polys = vec![];
     let mut current_ind = 0;

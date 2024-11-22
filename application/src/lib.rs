@@ -8,23 +8,32 @@ mod tests {
 
     #[test]
     fn test_mat_mult() {
-        let mat_a = Matrix::<Mersenne61Ext>::sample(150, 768);
-        let mat_b = Matrix::<Mersenne61Ext>::sample(768, 2304);
-        let mat_c = mat_a.clone() * mat_b.clone();
-
+        // let row_size = vec![150, 300, 600, 900, 1200];
+        let row_size = vec![150, 300, 600, 900, 1200];
         let mut wtr = Writer::from_path("mat_mult.csv").unwrap();
-        let size = mat_mult(&mat_a, &mat_b, &mat_c);
-        wtr.write_record(&[size.to_string()]).unwrap();
+        for r in row_size {
+            let mat_a = Matrix::<Mersenne61Ext>::sample(r, 768);
+            let mat_b = Matrix::<Mersenne61Ext>::sample(768, 2304);
+            let mat_c = mat_a.clone() * mat_b.clone();
+
+            println!("size {} start", r);
+            let size = mat_mult(&mat_a, &mat_b, &mat_c);
+            wtr.write_record(&[r.to_string(), size.to_string()]).unwrap();
+        }
     }
 
     #[test]
     fn test_naive_mat_mult() {
-        let mat_a = Matrix::<Mersenne61Ext>::sample(150, 768);
-        let mat_b = Matrix::<Mersenne61Ext>::sample(768, 2304);
-        let mat_c = mat_a.clone() * mat_b.clone();
-
+        let row_size = vec![150, 300, 600, 900, 1200];
+        // let row_size = vec![900];
         let mut wtr = Writer::from_path("naive_mat_mult.csv").unwrap();
-        let size = naive_mat_mult(&mat_a, &mat_b, &mat_c);
-        wtr.write_record(&[size.to_string()]).unwrap();
+        for r in row_size {
+            let mat_a = Matrix::<Mersenne61Ext>::sample(r, 768);
+            let mat_b = Matrix::<Mersenne61Ext>::sample(768, 2304);
+            let mat_c = mat_a.clone() * mat_b.clone();
+    
+            let size = naive_mat_mult(&mat_a, &mat_b, &mat_c);
+            wtr.write_record(&[r.to_string(), size.to_string()]).unwrap();
+        }
     }
 }

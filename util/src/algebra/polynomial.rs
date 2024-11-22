@@ -97,10 +97,21 @@ pub struct MultilinearPolynomial<T: MyField> {
 impl<T: MyField> Add for MultilinearPolynomial<T> {
     type Output = Self;
     fn add(self, rhs: Self) -> Self::Output {
+        let mut l = self.coefficients().clone();
+        let mut r = rhs.coefficients.clone();
+        if r.len() < l.len() {
+            (l, r) = (r, l);
+        }
+
+        while l.len() < r.len() {
+            l.extend(vec![T::from_int(0);l.len()]);
+        }
+
+        assert_eq!(l.len(), r.len());
         Self::new(
-            self.coefficients()
+            l
                 .iter()
-                .zip(rhs.coefficients().iter())
+                .zip(r.iter())
                 .map(|(&f, &g)| f + g)
                 .collect::<Vec<T>>(),
         )
