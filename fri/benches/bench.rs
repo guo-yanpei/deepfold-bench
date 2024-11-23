@@ -11,7 +11,7 @@ use util::{
     random_oracle::RandomOracle,
 };
 
-use util::{CODE_RATE, SECURITY_BITS, STEP};
+use util::{CODE_RATE, SECURITY_BITS, STEP, SIZE};
 fn commit<T: MyField>(criterion: &mut Criterion, variable_num: usize) {
     let total_round: usize = variable_num;
     let degree = 1 << variable_num;
@@ -38,7 +38,7 @@ fn commit<T: MyField>(criterion: &mut Criterion, variable_num: usize) {
 }
 
 fn bench_commit(c: &mut Criterion) {
-    for i in 10..19 {
+    for i in 10..SIZE {
         commit::<Mersenne61Ext>(c, i);
     }
 }
@@ -74,7 +74,7 @@ fn open<T: MyField>(criterion: &mut Criterion, variable_num: usize) {
 }
 
 fn bench_open(c: &mut Criterion) {
-    for i in 10..19 {
+    for i in 10..SIZE {
         open::<Mersenne61Ext>(c, i);
     }
 }
@@ -111,7 +111,7 @@ fn verify<T: MyField>(criterion: &mut Criterion, variable_num: usize) {
 }
 
 fn bench_verify(c: &mut Criterion) {
-    for i in 10..19 {
+    for i in 10..SIZE {
         verify::<Mersenne61Ext>(c, i);
     }
 }

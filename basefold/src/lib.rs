@@ -16,7 +16,7 @@ mod tests {
         merkle_tree::MERKLE_ROOT_SIZE,
         random_oracle::RandomOracle,
     };
-    use util::{CODE_RATE, SECURITY_BITS, STEP};
+    use util::{CODE_RATE, SECURITY_BITS, STEP, SIZE};
 
     fn output_proof_size(variable_num: usize) -> usize {
         let total_round = variable_num;
@@ -52,7 +52,7 @@ mod tests {
     #[test]
     fn test_proof_size() {
         let mut wtr = Writer::from_path("basefold.csv").unwrap();
-        let range = 10..18;
+        let range = 10..SIZE;
         for i in range.clone() {
             let proof_size = output_proof_size(i);
             wtr.write_record(&[i.to_string(), proof_size.to_string()])

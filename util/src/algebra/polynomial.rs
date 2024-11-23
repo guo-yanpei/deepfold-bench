@@ -1,3 +1,5 @@
+use std::ops::{Add, Mul};
+
 use crate::batch_bit_reverse;
 
 use super::coset::Coset;
@@ -90,6 +92,42 @@ impl<T: MyField> VanishingPolynomial<T> {
 #[derive(Debug, Clone)]
 pub struct MultilinearPolynomial<T: MyField> {
     coefficients: Vec<T>,
+}
+
+impl<T: MyField> Add for MultilinearPolynomial<T> {
+    type Output = Self;
+    fn add(self, rhs: Self) -> Self::Output {
+        let mut l = self.coefficients().clone();
+        let mut r = rhs.coefficients.clone();
+        if r.len() < l.len() {
+            (l, r) = (r, l);
+        }
+
+        while l.len() < r.len() {
+            l.extend(vec![T::from_int(0);l.len()]);
+        }
+
+        assert_eq!(l.len(), r.len());
+        Self::new(
+            l
+                .iter()
+                .zip(r.iter())
+                .map(|(&f, &g)| f + g)
+                .collect::<Vec<T>>(),
+        )
+    }
+}
+
+impl<T: MyField> Mul<T> for MultilinearPolynomial<T> {
+    type Output = Self;
+    fn mul(self, rhs: T) -> Self::Output {
+        Self::new(
+            self.coefficients()
+                .iter()
+                .map(|&f| f * rhs)
+                .collect::<Vec<T>>(),
+        )
+    }
 }
 
 impl<T: MyField> MultilinearPolynomial<T> {

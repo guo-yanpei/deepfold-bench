@@ -11,7 +11,7 @@ use util::{
 };
 use virgo::{prover::FriProver, verifier::FriVerifier};
 
-use util::{CODE_RATE, SECURITY_BITS, STEP};
+use util::{CODE_RATE, SECURITY_BITS, STEP, SIZE};
 
 fn commit(criterion: &mut Criterion, variable_num: usize) {
     let total_round = variable_num;
@@ -45,7 +45,7 @@ fn commit(criterion: &mut Criterion, variable_num: usize) {
 }
 
 fn bench_commit(c: &mut Criterion) {
-    for i in 10..15 {
+    for i in 10..SIZE {
         commit(c, i);
     }
 }
@@ -95,7 +95,7 @@ fn open(criterion: &mut Criterion, variable_num: usize) {
 }
 
 fn bench_open(c: &mut Criterion) {
-    for i in 10..15 {
+    for i in 10..SIZE {
         open(c, i);
     }
 }
@@ -142,7 +142,7 @@ fn verify(criterion: &mut Criterion, variable_num: usize) {
 }
 
 fn bench_verify(c: &mut Criterion) {
-    for i in 10..15 {
+    for i in 10..SIZE {
         verify(c, i);
     }
 }

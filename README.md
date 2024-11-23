@@ -79,6 +79,25 @@ DeepFold is implemented using $\mathbb{F}_{p^2}$, with $p = 2^{61} - 1$ as the b
 
 ## Benchmarking
 
+- **Benchmark All Protocols**:
+```bash
+./scripts/all-in-one.sh
+```
+
+> **Note**: The scripts will also output the proof size of protocols. The results can be found in **outputs/** directory.
+
+-- **Benchmark a Specific Protocol**
+```bash
+./scripts/deepfold-bench.sh
+```
+
+> **Note**: The most extensive benchmarking point may require approximately 50 GB of RAM.
+
+-- **Change the Size of Polynomials**
+```bash
+./scripts/set-size.sh 15
+```
+
 - **Benchmark All Protocols**: 
   ```bash
   cargo bench
@@ -91,7 +110,7 @@ DeepFold is implemented using $\mathbb{F}_{p^2}$, with $p = 2^{61} - 1$ as the b
   
 > **Note**: The most extensive benchmarking point may require approximately 50 GB of RAM.
 
-## Running Tests & Determining Proof Size
+<!-- ## Running Tests & Determining Proof Size
 
 - **Test All Protocols & Output Proof Sizes**: 
   ```bash
@@ -101,16 +120,17 @@ DeepFold is implemented using $\mathbb{F}_{p^2}$, with $p = 2^{61} - 1$ as the b
 - **Test & Output Proof Size for a Specific Protocol**: Choose from `deepfold`, `basefold`, `fri`, `polyfrim`, or `virgo`.
   ```bash
   cargo test -p <protocol> -- --nocapture
-  ```
+  ``` -->
 
 ## GKR
 
-For the multi-linear polynomial commitment in DeepFold and Virgo, there's an included GKR.
+For the multi-linear polynomial commitment in Virgo, there's an included GKR.
+The Benchmarking script runs both PCS and GKR parts of Virgo automatically, but the results need to be sumed up for comparing with other protocols.
 
-**Benchmarking GKR**:
+<!-- **Benchmarking GKR**:
 1. Execute `bench_gkr.py` within the `virgo/` directory.
-2. This script calls the executable `virgo/fft_gkr` and produces the GKR prover time, verifier time, and proof size.
+2. This script calls the executable `virgo/fft_gkr` and produces the GKR prover time, verifier time, and proof size. -->
 
 > **Note**: The executable originates from [Virgo](https://github.com/sunblaze-ucb/Virgo), and we're directly utilizing it here.
 
-For the final evaluation result of DeepFold and Virgo, it's essential to sum the results from the Rust implementation and the GKR. This summation is a manual process.
+<!-- For the final evaluation result of Virgo, it's essential to sum the results from the Rust implementation and the GKR. This summation is a manual process. -->

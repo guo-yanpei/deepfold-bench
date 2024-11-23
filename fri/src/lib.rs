@@ -14,7 +14,7 @@ mod tests {
         merkle_tree::MERKLE_ROOT_SIZE,
         random_oracle::RandomOracle,
     };
-    use util::{CODE_RATE, SECURITY_BITS, STEP};
+    use util::{CODE_RATE, SECURITY_BITS, STEP, SIZE};
 
     fn output_proof_size(variable_num: usize) -> usize {
         let degree = 1 << variable_num;
@@ -46,7 +46,7 @@ mod tests {
     #[test]
     fn test_proof_size() {
         let mut wtr = Writer::from_path("fri.csv").unwrap();
-        for i in 10..11 {
+        for i in 10..SIZE {
             let proof_size = output_proof_size(i);
             wtr.write_record([i.to_string(), proof_size.to_string()])
                 .unwrap();

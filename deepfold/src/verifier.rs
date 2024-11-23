@@ -53,6 +53,10 @@ impl<T: MyField> Verifier<T> {
         self.open_point.clone()
     }
 
+    pub fn set_open_point(&mut self, point: &Vec<T>) {
+        self.open_point = point.clone();
+    }
+
     pub fn verify(mut self, proof: Proof<T>) -> bool {
         self.final_value = Some(proof.final_value);
         self.final_poly = Some(proof.final_poly);
