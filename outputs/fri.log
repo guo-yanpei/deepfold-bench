@@ -1,0 +1,86 @@
+
+running 1 test
+i
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+fri Mersenne61Ext commit 10
+                        time:   [1.6637 ms 1.6840 ms 1.7434 ms]
+
+fri Mersenne61Ext commit 11
+                        time:   [3.7404 ms 3.7470 ms 3.7548 ms]
+
+fri Mersenne61Ext commit 12
+                        time:   [8.7857 ms 8.8170 ms 8.8740 ms]
+
+fri Mersenne61Ext commit 13
+                        time:   [17.318 ms 17.361 ms 17.430 ms]
+
+fri Mersenne61Ext commit 14
+                        time:   [40.368 ms 40.488 ms 40.780 ms]
+
+fri Mersenne61Ext commit 15
+                        time:   [79.026 ms 79.140 ms 79.241 ms]
+
+fri Mersenne61Ext commit 16
+                        time:   [173.39 ms 174.54 ms 175.91 ms]
+
+fri Mersenne61Ext commit 17
+                        time:   [353.04 ms 354.46 ms 356.56 ms]
+
+fri Mersenne61Ext commit 18
+                        time:   [759.92 ms 770.25 ms 779.93 ms]
+
+fri Mersenne61Ext open 10
+                        time:   [1.5583 ms 1.5621 ms 1.5668 ms]
+
+fri Mersenne61Ext open 11
+                        time:   [2.9904 ms 2.9948 ms 2.9994 ms]
+
+fri Mersenne61Ext open 12
+                        time:   [5.8595 ms 5.8702 ms 5.8918 ms]
+
+fri Mersenne61Ext open 13
+                        time:   [11.573 ms 11.601 ms 11.614 ms]
+
+fri Mersenne61Ext open 14
+                        time:   [23.883 ms 23.979 ms 24.083 ms]
+
+fri Mersenne61Ext open 15
+                        time:   [48.933 ms 49.103 ms 49.282 ms]
+
+fri Mersenne61Ext open 16
+                        time:   [99.439 ms 99.762 ms 100.56 ms]
+
+fri Mersenne61Ext open 17
+                        time:   [233.60 ms 238.16 ms 242.45 ms]
+
+fri Mersenne61Ext open 18
+                        time:   [505.35 ms 529.22 ms 546.84 ms]
+
+fri Mersenne61Ext verify 10
+                        time:   [332.75 µs 333.35 µs 333.96 µs]
+
+fri Mersenne61Ext verify 11
+                        time:   [392.71 µs 393.53 µs 394.17 µs]
+
+fri Mersenne61Ext verify 12
+                        time:   [439.61 µs 440.54 µs 441.94 µs]
+
+fri Mersenne61Ext verify 13
+                        time:   [517.03 µs 517.77 µs 518.73 µs]
+
+fri Mersenne61Ext verify 14
+                        time:   [581.58 µs 584.12 µs 586.86 µs]
+
+fri Mersenne61Ext verify 15
+                        time:   [659.72 µs 661.00 µs 662.57 µs]
+
+fri Mersenne61Ext verify 16
+                        time:   [745.08 µs 746.59 µs 748.11 µs]
+
+fri Mersenne61Ext verify 17
+                        time:   [844.80 µs 847.92 µs 851.09 µs]
+
+fri Mersenne61Ext verify 18
+                        time:   [941.17 µs 943.14 µs 944.94 µs]
+

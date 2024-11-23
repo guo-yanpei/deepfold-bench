@@ -253,6 +253,64 @@ pub fn mat_mult<T: MyField>(a: &Matrix<T>, b: &Matrix<T>, c: &Matrix<T>) -> usiz
 
 }
 
+pub fn naive_opening<T: MyField> (a: &Matrix<T>, b: &Matrix<T>, c: &Matrix<T>) -> usize {
+    let mut rng = thread_rng();
+    let r_1 = rng.gen_range(0..c.get_row_size());
+    let r_2 = rng.gen_range(0..c.get_col_size());
+
+    let poly_a = a.naive_poly.clone();
+    let poly_b = b.naive_poly.clone();
+    let poly_c = c.naive_poly.clone();
+
+    let variable_number = a.get_padded_col_size().ilog2() as usize;
+    let oracle = RandomOracle::new(variable_number, 1);
+
+    let f = a.mask_poly(variable_number);
+    let mut sc_prover = SumcheckProver::new(variable_number, f, &oracle);
+    let mut sc_verifier = SumcheckVerifier::new(variable_number, &oracle);
+    sc_prover.prove();
+    sc_prover.send_sumcheck_values(&mut sc_verifier);
+    let (challenge, _scalar) = sc_verifier.verify();
+
+    let mut point_a =
+        int_2_field_vec::<T>(r_1 as u64, a.get_padded_row_size().ilog2() as usize).clone();
+    point_a.extend(&challenge);
+    let mut point_b = challenge.clone();
+    point_b.extend(int_2_field_vec::<T>(
+        r_2 as u64,
+        b.get_padded_col_size().ilog2() as usize,
+    ));
+    let mut point_c =
+        int_2_field_vec::<T>(r_1 as u64, a.get_padded_row_size().ilog2() as usize).clone();
+    point_c.extend(int_2_field_vec::<T>(
+        r_2 as u64,
+        b.get_padded_col_size().ilog2() as usize,
+    ));
+
+    let mut full_polys = a.polys.clone().into_iter().flatten().collect::<Vec<MultilinearPolynomial<T>>>();
+    full_polys.extend(b.polys.clone().into_iter().flatten());
+    let mut total_size = 0;
+    for p in full_polys {
+        let df_vn = p.variable_num();
+        let mut interpolate_cosets = vec![Coset::new(1 << (df_vn + CODE_RATE), T::from_int(1))];
+        for i in 1..df_vn + 1 {
+            interpolate_cosets.push(interpolate_cosets[i - 1].pow(2));
+        }
+    
+        let oracle = RandomOracle::new(df_vn, SECURITY_BITS / CODE_RATE);
+        let df_prover = DeepfoldProver::new(df_vn, &interpolate_cosets, p, &oracle, 1);
+        let commit = df_prover.commit_polynomial();
+        let df_verifier = DeepfoldVerifier::new(df_vn, &interpolate_cosets, commit, &oracle, 1);
+        // let point = get_random_shuffle_point::<T>(df_vn);
+        let point = df_verifier.get_open_point();
+        let proof = df_prover.generate_proof(point);
+        let size = proof.size();
+        total_size += size;
+        assert!(df_verifier.verify(proof));
+    }
+    total_size
+}
+
 pub fn naive_mat_mult<T: MyField>(a: &Matrix<T>, b: &Matrix<T>, c: &Matrix<T>) -> usize {
     let mut rng = thread_rng();
     let r_1 = rng.gen_range(0..c.get_row_size());
