@@ -2,6 +2,8 @@ import os
 import random, string
 import csv
 
+SIZE = 18
+
 def randomword(length):
    letters = string.ascii_lowercase
    return ''.join(random.choice(letters) for i in range(length))
@@ -9,7 +11,7 @@ def randomword(length):
 tmp_file = randomword(20) + '.txt'
 with open("fft_gkr.csv", mode='w', newline='') as file:
     writer = csv.writer(file)
-    for i in range(10, 23):
+    for i in range(10, SIZE):
         print('bench fft_gkr of size', i)
         round = 10
         prover_time = 0

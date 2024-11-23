@@ -11,7 +11,7 @@ use util::{
     random_oracle::RandomOracle,
 };
 
-use util::{CODE_RATE, SECURITY_BITS};
+use util::{CODE_RATE, SECURITY_BITS, SIZE};
 fn commit(criterion: &mut Criterion, variable_num: usize, terminate_round: usize) {
     let polynomial = MultilinearPolynomial::random_polynomial(variable_num);
     let mut interpolate_cosets = vec![Coset::new(
@@ -41,7 +41,7 @@ fn commit(criterion: &mut Criterion, variable_num: usize, terminate_round: usize
 }
 
 fn bench_commit(c: &mut Criterion) {
-    for i in 10..23 {
+    for i in 10..SIZE {
         commit(c, i, 1);
     }
 }
@@ -87,7 +87,7 @@ fn open(criterion: &mut Criterion, variable_num: usize, terminate_round: usize) 
 }
 
 fn bench_open(c: &mut Criterion) {
-    for i in 10..23 {
+    for i in 10..SIZE {
         open(c, i, 1);
     }
 }
@@ -130,7 +130,7 @@ fn verify(criterion: &mut Criterion, variable_num: usize, terminate_round: usize
 }
 
 fn bench_verify(c: &mut Criterion) {
-    for i in 10..23 {
+    for i in 10..SIZE {
         verify(c, i, 1);
     }
 }

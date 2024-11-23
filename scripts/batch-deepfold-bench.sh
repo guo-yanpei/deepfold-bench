@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # 定义输出文件的路径
-OUTPUT_FILE="outputs/batch-deepfold.log"
+mkdir -p outputs/batch-deepfold
+OUTPUT_FILE="outputs/batch-deepfold/batch-deepfold.log"
 PROOF_SIZE_FILE="batch-deepfold-proofsize.csv"
 
 echo "polyfrim benchmarking..."
@@ -17,7 +18,7 @@ fi
 
 echo "batch-deepfold proofsizing..."
 cargo test -p batch --release -- --nocapture --quiet
-cp batch/batch.csv outputs/$PROOF_SIZE_FILE
+cp batch/batch.csv outputs/batch-deepfold/$PROOF_SIZE_FILE
 echo "batch-deepfold proofsize has been written to $PROOF_SIZE_FILE"
 
 

@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # 定义输出文件的路径
-OUTPUT_FILE="outputs/fri.log"
+mkdir -p outputs/fri
+OUTPUT_FILE="outputs/fri/fri.log"
 PROOF_SIZE_FILE="fri-proofsize.csv"
 
 echo "fri benchmarking..."
@@ -17,7 +18,7 @@ fi
 
 echo "fri proofsizing..."
 cargo test -p fri --release -- --nocapture --quiet
-cp fri/fri.csv outputs/$PROOF_SIZE_FILE
+cp fri/fri.csv outputs/fri/$PROOF_SIZE_FILE
 echo "fri proofsize has been written to $PROOF_SIZE_FILE"
 
 

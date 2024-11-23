@@ -116,7 +116,7 @@ mod tests {
         },
         random_oracle::RandomOracle,
     };
-    use util::{CODE_RATE, SECURITY_BITS};
+    use util::{CODE_RATE, SECURITY_BITS, SIZE};
 
     fn output_proof_size<T: MyField>(variable_num: usize) -> usize {
         let mut interpolate_cosets =
@@ -142,7 +142,7 @@ mod tests {
     #[test]
     fn test_proof_size() {
         let mut wtr = Writer::from_path("batch.csv").unwrap();
-        let range = 10..20;
+        let range = 10..SIZE;
         for i in range.clone() {
             let proof_size = output_proof_size::<Mersenne61Ext>(i);
             wtr.write_record(&[i.to_string(), proof_size.to_string()])

@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # 定义输出文件的路径
-OUTPUT_FILE="outputs/polyfrim.log"
+mkdir -p outputs/polyfrim
+OUTPUT_FILE="outputs/polyfrim/polyfrim.log"
 PROOF_SIZE_FILE="polyfrim-proofsize.csv"
 
 echo "polyfrim benchmarking..."
@@ -17,7 +18,7 @@ fi
 
 echo "polyfrim proofsizing..."
 cargo test -p polyfrim --release -- --nocapture --quiet
-cp polyfrim/polyfrim.csv outputs/$PROOF_SIZE_FILE
+cp polyfrim/polyfrim.csv outputs/polyfrim/$PROOF_SIZE_FILE
 echo "polyfrim proofsize has been written to $PROOF_SIZE_FILE"
 
 

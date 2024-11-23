@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # 定义输出文件的路径
-OUTPUT_FILE="outputs/matmult.log"
+mkdir -p outputs/matmult
+OUTPUT_FILE="outputs/matmult/matmult.log"
 PROOF_SIZE_FILE="matmult-proofsize.csv"
 
 echo "matmult benchmarking..."
@@ -17,7 +18,7 @@ fi
 
 echo "matmult proofsizing..."
 cargo test -p matmult --release -- --nocapture --quiet
-cp -r matmult outputs/matmult
+cp -r matmult/* outputs/matmult/
 echo "matmult proofsize has been written to $PROOF_SIZE_FILE"
 
 

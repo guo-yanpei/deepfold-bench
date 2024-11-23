@@ -16,7 +16,7 @@ mod tests {
         merkle_tree::MERKLE_ROOT_SIZE,
         random_oracle::RandomOracle,
     };
-    use util::{CODE_RATE, SECURITY_BITS};
+    use util::{CODE_RATE, SECURITY_BITS, SIZE};
 
     fn output_proof_size(variable_num: usize, terminate_round: usize) -> usize {
         let polynomial = MultilinearPolynomial::random_polynomial(variable_num);
@@ -58,7 +58,7 @@ mod tests {
     #[test]
     fn test_proof_size() {
         let mut wtr = Writer::from_path("polyfrim.csv").unwrap();
-        let range = 10..23;
+        let range = 10..SIZE;
         for i in range.clone() {
             let proof_size = output_proof_size(i, 1);
             wtr.write_record(&[i.to_string(), proof_size.to_string()])

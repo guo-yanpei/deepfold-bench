@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # 定义输出文件的路径
-OUTPUT_FILE="outputs/basefold.log"
+mkdir -p outputs/basefold
+OUTPUT_FILE="outputs/basefold/basefold.log"
 PROOF_SIZE_FILE="basefold-proofsize.csv"
 
 echo "Basefold benchmarking..."
@@ -17,7 +18,7 @@ fi
 
 echo "basefold proofsizing..."
 cargo test -p deepfold --release -- --nocapture --quiet
-cp basefold/basefold.csv outputs/$PROOF_SIZE_FILE
+cp basefold/basefold.csv outputs/basefold/$PROOF_SIZE_FILE
 echo "basefold proofsize has been written to $PROOF_SIZE_FILE"
 
 
