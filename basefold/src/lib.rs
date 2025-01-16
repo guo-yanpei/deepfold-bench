@@ -16,7 +16,7 @@ mod tests {
         merkle_tree::MERKLE_ROOT_SIZE,
         random_oracle::RandomOracle,
     };
-    use util::{CODE_RATE, SECURITY_BITS, STEP, SIZE};
+    use util::{CODE_RATE, SECURITY_BITS, SIZE, STEP};
 
     fn output_proof_size(variable_num: usize) -> usize {
         let total_round = variable_num;

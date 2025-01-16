@@ -105,7 +105,7 @@ mod tests {
         },
         random_oracle::RandomOracle,
     };
-    use util::{CODE_RATE, SECURITY_BITS, STEP, SIZE};
+    use util::{CODE_RATE, SECURITY_BITS, SIZE, STEP};
 
     fn output_proof_size<T: MyField>(variable_num: usize) -> usize {
         let polynomial = MultilinearPolynomial::random_polynomial(variable_num);

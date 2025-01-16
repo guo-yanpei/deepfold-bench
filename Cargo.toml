@@ -8,4 +8,5 @@ members = [
     "polyfrim",
     "fri",
     "matmult",
+    "zeromorph"
 ]

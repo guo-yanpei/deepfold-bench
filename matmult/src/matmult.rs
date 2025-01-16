@@ -219,10 +219,15 @@ pub fn mat_mult<T: MyField>(a: &Matrix<T>, b: &Matrix<T>, c: &Matrix<T>) -> usiz
     //         .flatten()
     //         .collect::<Vec<MultilinearPolynomial<T>>>(),
     // ];
-    let mut full_polys = a.polys.clone().into_iter().flatten().collect::<Vec<MultilinearPolynomial<T>>>();
+    let mut full_polys = a
+        .polys
+        .clone()
+        .into_iter()
+        .flatten()
+        .collect::<Vec<MultilinearPolynomial<T>>>();
     full_polys.extend(b.polys.clone().into_iter().flatten());
     // random shuffle for polys to assign a shared evaluate point
-    
+
     let random_shuffle_poly = full_polys.clone().into_iter().reduce(|f, g| f + g).unwrap();
     let sc_vn = random_shuffle_poly.variable_num();
     let oracle = RandomOracle::new(sc_vn, 1);
@@ -250,10 +255,9 @@ pub fn mat_mult<T: MyField>(a: &Matrix<T>, b: &Matrix<T>, c: &Matrix<T>) -> usiz
     let size = proof.size();
     assert!(df_verifier.verify(proof));
     size
-
 }
 
-pub fn naive_opening<T: MyField> (a: &Matrix<T>, b: &Matrix<T>, c: &Matrix<T>) -> usize {
+pub fn naive_opening<T: MyField>(a: &Matrix<T>, b: &Matrix<T>, c: &Matrix<T>) -> usize {
     let mut rng = thread_rng();
     let r_1 = rng.gen_range(0..c.get_row_size());
     let r_2 = rng.gen_range(0..c.get_col_size());
@@ -287,7 +291,12 @@ pub fn naive_opening<T: MyField> (a: &Matrix<T>, b: &Matrix<T>, c: &Matrix<T>) -
         b.get_padded_col_size().ilog2() as usize,
     ));
 
-    let mut full_polys = a.polys.clone().into_iter().flatten().collect::<Vec<MultilinearPolynomial<T>>>();
+    let mut full_polys = a
+        .polys
+        .clone()
+        .into_iter()
+        .flatten()
+        .collect::<Vec<MultilinearPolynomial<T>>>();
     full_polys.extend(b.polys.clone().into_iter().flatten());
     let mut total_size = 0;
     for p in full_polys {
@@ -296,7 +305,7 @@ pub fn naive_opening<T: MyField> (a: &Matrix<T>, b: &Matrix<T>, c: &Matrix<T>) -
         for i in 1..df_vn + 1 {
             interpolate_cosets.push(interpolate_cosets[i - 1].pow(2));
         }
-    
+
         let oracle = RandomOracle::new(df_vn, SECURITY_BITS / CODE_RATE);
         let df_prover = DeepfoldProver::new(df_vn, &interpolate_cosets, p, &oracle, 1);
         let commit = df_prover.commit_polynomial();
@@ -358,7 +367,7 @@ pub fn naive_mat_mult<T: MyField>(a: &Matrix<T>, b: &Matrix<T>, c: &Matrix<T>) -
         for i in 1..df_vn + 1 {
             interpolate_cosets.push(interpolate_cosets[i - 1].pow(2));
         }
-    
+
         let oracle = RandomOracle::new(df_vn, SECURITY_BITS / CODE_RATE);
         let df_prover = DeepfoldProver::new(df_vn, &interpolate_cosets, poly, &oracle, 1);
         let commit = df_prover.commit_polynomial();

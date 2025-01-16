@@ -11,7 +11,7 @@ use util::{
     random_oracle::RandomOracle,
 };
 
-use util::{CODE_RATE, SECURITY_BITS, STEP, SIZE};
+use util::{CODE_RATE, SECURITY_BITS, SIZE, STEP};
 fn commit<T: MyField>(criterion: &mut Criterion, variable_num: usize) {
     let polynomial = MultilinearPolynomial::random_polynomial(variable_num);
     let mut interpolate_cosets = vec![Coset::new(1 << (variable_num + CODE_RATE), T::from_int(1))];

@@ -104,13 +104,12 @@ impl<T: MyField> Add for MultilinearPolynomial<T> {
         }
 
         while l.len() < r.len() {
-            l.extend(vec![T::from_int(0);l.len()]);
+            l.extend(vec![T::from_int(0); l.len()]);
         }
 
         assert_eq!(l.len(), r.len());
         Self::new(
-            l
-                .iter()
+            l.iter()
                 .zip(r.iter())
                 .map(|(&f, &g)| f + g)
                 .collect::<Vec<T>>(),
