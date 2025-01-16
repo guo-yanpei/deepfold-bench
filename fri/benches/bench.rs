@@ -11,7 +11,7 @@ use util::{
     random_oracle::RandomOracle,
 };
 
-use util::{CODE_RATE, SECURITY_BITS, STEP, SIZE};
+use util::{CODE_RATE, SECURITY_BITS, SIZE, STEP};
 fn commit<T: MyField>(criterion: &mut Criterion, variable_num: usize) {
     let total_round: usize = variable_num;
     let degree = 1 << variable_num;

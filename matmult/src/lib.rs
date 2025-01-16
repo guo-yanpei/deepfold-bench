@@ -18,7 +18,8 @@ mod tests {
 
             println!("size {} start", r);
             let size = mat_mult(&mat_a, &mat_b, &mat_c);
-            wtr.write_record(&[r.to_string(), size.to_string()]).unwrap();
+            wtr.write_record(&[r.to_string(), size.to_string()])
+                .unwrap();
         }
     }
 
@@ -31,9 +32,10 @@ mod tests {
             let mat_a = Matrix::<Mersenne61Ext>::sample(r, 768);
             let mat_b = Matrix::<Mersenne61Ext>::sample(768, 2304);
             let mat_c = mat_a.clone() * mat_b.clone();
-    
+
             let size = naive_mat_mult(&mat_a, &mat_b, &mat_c);
-            wtr.write_record(&[r.to_string(), size.to_string()]).unwrap();
+            wtr.write_record(&[r.to_string(), size.to_string()])
+                .unwrap();
         }
     }
 
@@ -46,9 +48,10 @@ mod tests {
             let mat_a = Matrix::<Mersenne61Ext>::sample(r, 768);
             let mat_b = Matrix::<Mersenne61Ext>::sample(768, 2304);
             let mat_c = mat_a.clone() * mat_b.clone();
-    
+
             let size = naive_opening(&mat_a, &mat_b, &mat_c);
-            wtr.write_record(&[r.to_string(), size.to_string()]).unwrap();
+            wtr.write_record(&[r.to_string(), size.to_string()])
+                .unwrap();
         }
     }
 }

@@ -15,7 +15,7 @@ mod tests {
         random_oracle::RandomOracle,
     };
 
-    use util::{CODE_RATE, SECURITY_BITS, STEP, SIZE};
+    use util::{CODE_RATE, SECURITY_BITS, SIZE, STEP};
     fn output_proof_size(variable_num: usize) -> usize {
         let total_round = variable_num;
         let polynomial = MultilinearPolynomial::random_polynomial(variable_num);

@@ -7,5 +7,5 @@ members = [
     "virgo",
     "polyfrim",
     "fri",
-    "matmult",
+    "matmult"
 ]

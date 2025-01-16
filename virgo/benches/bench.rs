@@ -11,7 +11,7 @@ use util::{
 };
 use virgo::{prover::FriProver, verifier::FriVerifier};
 
-use util::{CODE_RATE, SECURITY_BITS, STEP, SIZE};
+use util::{CODE_RATE, SECURITY_BITS, SIZE, STEP};
 
 fn commit(criterion: &mut Criterion, variable_num: usize) {
     let total_round = variable_num;
