@@ -101,7 +101,6 @@ fn bench_open(c: &mut Criterion) {
 }
 
 fn verify(criterion: &mut Criterion, variable_num: usize) {
-    let total_round = variable_num;
     let polynomial = MultilinearPolynomial::random_polynomial(variable_num);
     let mut interpolate_cosets = vec![Coset::new(
         1 << (variable_num + CODE_RATE),

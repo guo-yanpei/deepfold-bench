@@ -117,9 +117,8 @@ fn verify<T: MyField>(criterion: &mut Criterion, variable_num: usize) {
 }
 
 fn bench_verify(c: &mut Criterion) {
-    for i in 10..SIZE {
+    for i in 18..SIZE {
         verify::<Mersenne61Ext>(c, i);
-        // verify::<Ft255>(c, i);
     }
 }
 
